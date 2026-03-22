@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flores Amarillas 🌼🐶</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<style>
+html, body { height:100%; margin:0; padding:0; overflow:hidden; }
+body {
+  background: url("fondo_romantico.jpg") no-repeat center center / cover;
+  font-family: 'Dancing Script', cursive;
+}
+
+/* Contenedores */
+#start, #game, #final {
+  position:absolute; width:100%; height:100%;
+  display:flex; flex-direction:column;
+  justify-content:center; align-items:center;
+  text-align:center;
+}
+#game, #final { display:none; }
+
+button {
+  padding:15px 30px;
+  border:none;
+  border-radius:20px;
+  background:#ff8fb1; color:white;
+  font-size:22px; cursor:pointer;
+  box-shadow:0 5px 10px rgba(0,0,0,0.2);
+}
+
+#counter {
+  position:absolute; top:15px; left:15px;
+  background: rgba(255,255,255,0.85);
+  padding:10px 15px;
+  border-radius:12px;
+  font-size:22px;
+  color:#d6457f;
+  box-shadow:0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* Perrito caricatura animado */
+#player {
+  position:absolute; bottom:30px;
+  width:120px; height:120px;
+  transition: transform 0.2s;
+}
+/* Cuerpo */
+#player .body { position:absolute; width:70px; height:50px; background:#fff7e6; border-radius:50% 50% 60% 60%; left:25px; top:50px; border:3px solid #333;}
+/* Cabeza */
+#player .head { position:absolute; width:45px; height:45px; background:#fff7e6; border-radius:50%; border:3px solid #333; left:0; top:20px; z-index:2;}
+/* Orejas */
+#player .ear-left, #player .ear-right { position:absolute; width:12px; height:35px; background:#333; border-radius:50%; top:15px;}
+#player .ear-left { left:-6px; transform:rotate(-15deg);}
+#player .ear-right { right:-6px; transform:rotate(15deg);}
+#player .eye-left, #player .eye-right { position:absolute; width:8px; height:8px; background:#333; border-radius:50%; top:25px;}
+#player .eye-left { left:10px;}
+#player .eye-right { left:28px;}
+#player .eye-left::after, #player .eye-right::after { content:""; position:absolute; width:3px; height:3px; background:white; border-radius:50%; top:1px; left:1px;}
+/* Guiño */
+#player.wink .eye-right { height:2px; top:27px; border-radius:50%; }
+/* Mejillas */
+#player .cheeks-left, #player .cheeks-right { position:absolute; width:6px; height:6px; background:#ff9999; border-radius:50%; top:35px;}
+#player .cheeks-left { left:8px; }
+#player .cheeks-right { left:30px; }
+/* Hocico y nariz */
+#player .nose { position:absolute; width:8px; height:6px; background:#333; border-radius:50%; left:19px; top:38px;}
+#player .smile { position:absolute; width:20px; height:10px; border-bottom:3px solid #333; border-radius:0 0 20px 20px; left:12px; top:40px;}
+/* Patitas animadas */
+#player .leg-left, #player .leg-right { position:absolute; width:12px; height:18px; background:#fff7e6; border:3px solid #333; border-radius:50%; bottom:0; animation:walk 0.5s infinite alternate paused;}
+#player .leg-left { left:35px; }
+#player .leg-right { right:35px; }
+/* Cola */
+#player .tail { position:absolute; width:10px; height:30px; background:#333; border-radius:50%; top:60px; right:-5px; transform-origin:top center; animation:wag 0.5s infinite alternate;}
+/* Sombrero */
+#player .hat { position:absolute; width:40px; height:20px; background:#ff4757; border-radius:10px 10px 0 0; left:2px; top:0px; transform: rotate(-10deg); border:2px solid #333; z-index:3;}
+
+/* Animaciones */
+@keyframes wag {0%{transform:rotate(-20deg);}100%{transform:rotate(20deg);}}
+@keyframes walk {0%{transform:rotate(0deg);}100%{transform:rotate(15deg);}}
+
+/* Flores reales */
+.flower { position:absolute; width:30px; height:30px; background: #ffe066; border-radius:50%; box-shadow: inset -2px -2px 0 #ffd700, inset 2px 2px 0 #ffec99; clip-path: polygon(50% 0%,65% 20%,95% 25%,75% 50%,80% 80%,50% 65%,20% 80%,25% 50%,5% 25%,35% 20%);}
+
+/* Frases que caen */
+.bubble { position:absolute; bottom:130px; background:rgba(255,255,255,0.9); padding:12px 18px; border-radius:22px; font-size:20px; color:#a93226; font-weight:bold; text-shadow:1px 1px 3px #fff; box-shadow:0 0 15px rgba(0,0,0,0.2); animation:fade 3s forwards;}
+@keyframes fade {0%{opacity:0;}10%{opacity:1;}100%{opacity:0;}}
+
+#final p { font-size:26px; color:#922b21; text-shadow:1px 1px 3px rgba(0,0,0,0.3);}
+
+/* Joystick */
+#joystick-left, #joystick-right {
+  position: fixed;
+  bottom: 30px;
+  width: 60px; height: 60px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 50%;
+  display:flex; justify-content:center; align-items:center;
+  font-size:32px; color:#d6457f; user-select:none;
+  z-index:5;
+}
+#joystick-left { left: 20px; }
+#joystick-right { right: 20px; }
+#joystick-left:active, #joystick-right:active { background: rgba(255,255,255,0.8);}
+</style>
+</head>
+<body>
+
+<div id="start">
+  <h1 style="font-size:50px; color:#d6457f;">🌼 Flores Amarillas 🌼</h1>
+  <p style="font-size:24px; color:#b33939;">Recoge 10 flores 💛</p>
+  <button onclick="startGame()">Empezar</button>
+</div>
+
+<div id="game">
+  <div id="counter">0 / 10</div>
+  <div id="player">
+    <div class="body"></div>
+    <div class="head"></div>
+    <div class="ear-left"></div>
+    <div class="ear-right"></div>
+    <div class="eye-left"></div>
+    <div class="eye-right"></div>
+    <div class="cheeks-left"></div>
+    <div class="cheeks-right"></div>
+    <div class="nose"></div>
+    <div class="smile"></div>
+    <div class="leg-left"></div>
+    <div class="leg-right"></div>
+    <div class="tail"></div>
+    <div class="hat"></div>
+  </div>
+
+  <!-- Joystick -->
+  <div id="joystick-left">◀</div>
+  <div id="joystick-right">▶</div>
+</div>
+
+<div id="final">
+  <h2 style="font-size:48px; color:#d6457f;">🎉 ¡Felicidades! 💐</h2>
+  <p>"Mira! Todas las flores te pertenecen... como mi corazón, siempre para ti P<3💞"</p>
+</div>
+
+<audio id="music" loop>
+  <source src="musica.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const frases=[
+  "Si existo en este mundo… es porque tú estás en él ✨❤️",
+  "No quiero una eternidad… te quiero a ti en cada momento ⏳💞",
+  "Desde que llegaste… todo tiene sentido 🌸💫",
+  "No fue casualidad… fue el destino llevándome a ti 🧵❤️‍🔥",
+  "Te encontré… y ya no supe cómo dejar de amarte 🥀💘",
+  "Eres la historia que quiero repetir en cada vida 📖💖",
+  "No importa el tiempo… siempre llegaré a ti 🌙⏰",
+  "Mi lugar favorito… es donde estás tú 🏡💕",
+  "Si el mundo termina mañana… hoy te elijo mil veces 🌎❤️‍🔥",
+  "No eres un momento… eres mi para siempre ♾️💞"
+];
+let count=0;
+
+function startGame(){
+  document.getElementById("start").style.display="none";
+  document.getElementById("game").style.display="flex";
+  document.getElementById("music").play().catch(()=>{});
+}
+
+let posX=window.innerWidth/2;
+const player=document.getElementById("player");
+let speed=0;
+
+// Movimiento teclado
+document.addEventListener("keydown", e=>{
+  if(e.key==="ArrowLeft") speed=-5;
+  if(e.key==="ArrowRight") speed=5;
+});
+document.addEventListener("keyup", e=>{ speed=0; });
+
+// Movimiento joystick
+const legEls = player.querySelectorAll('.leg-left,.leg-right');
+document.getElementById("joystick-left").addEventListener("touchstart",()=>{ speed=-5; legEls.forEach(l=>l.style.animationPlayState='running'); });
+document.getElementById("joystick-left").addEventListener("touchend",()=>{ speed=0; legEls.forEach(l=>l.style.animationPlayState='paused'); });
+document.getElementById("joystick-right").addEventListener("touchstart",()=>{ speed=5; legEls.forEach(l=>l.style.animationPlayState='running'); });
+document.getElementById("joystick-right").addEventListener("touchend",()=>{ speed=0; legEls.forEach(l=>l.style.animationPlayState='paused'); });
+
+// Movimiento touch en toda pantalla
+document.addEventListener("touchmove", e=>{
+  posX = e.touches[0].clientX - 60;
+  if(posX <0) posX=0;
+  if(posX>window.innerWidth-120) posX=window.innerWidth-120;
+});
+
+function createFlower(){
+  let f=document.createElement("div");
+  f.className="flower";
+  f.style.left=Math.random()*(window.innerWidth-30)+"px";
+  f.style.top="-30px";
+  document.body.appendChild(f);
+  let fall=setInterval(()=>{
+    f.style.top=(f.offsetTop+3)+"px";
+    let px=posX, py=window.innerHeight-90;
+    let fx=f.offsetLeft, fy=f.offsetTop;
+    if(fy+30>py && fy<py+100 && fx+30>px && fx<px+120){
+      f.remove(); clearInterval(fall); recoger();
+    }
+    if(fy>window.innerHeight){ f.remove(); clearInterval(fall);}
+  },16);
+}
+
+function recoger(){
+  if(count<frases.length) mostrarFrase(frases[count]);
+  count++;
+  document.getElementById("counter").innerText=count+" / 10";
+  if(count>=10){
+    // Mirar hacia pantalla y guiño
+    player.classList.add('wink');
+    player.style.transform="scaleX(-1)";
+    setTimeout(()=>{ 
+      document.getElementById("game").style.display="none";
+      document.getElementById("final").style.display="flex";
+    },1500);
+  }
+}
+
+function mostrarFrase(text){
+  let b=document.createElement("div");
+  b.className="bubble";
+  b.innerText=text;
+  b.style.left=posX+"px";
+  document.body.appendChild(b);
+  setTimeout(()=>b.remove(),3000);
+}
+
+function gameLoop(){
+  posX+=speed;
+  if(posX<0) posX=0;
+  if(posX>window.innerWidth-120) posX=window.innerWidth-120;
+  player.style.left=posX+"px";
+  requestAnimationFrame(gameLoop);
+}
+setInterval(createFlower,900);
+gameLoop();
+</script>
+
+</body>
+</html>
